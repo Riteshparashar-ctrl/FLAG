@@ -331,7 +331,7 @@
     right: 16px;
     font-size: 22px;
     letter-spacing: 0.5px;
-    color: #eb3609;
+    color: #ffe08a;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,204,0,0.35);
     padding: 5px 12px;
@@ -344,8 +344,8 @@
   }
 
   .credit-photo {
-    width: 60px;
-    height: 60px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background-image: url("myphoto.jpeg");
     background-size: cover;
@@ -490,54 +490,44 @@
     const bgAudio = document.getElementById('bgAudio');
     const soundBtn = document.getElementById('soundBtn');
     let isPlaying = false;
-    let unlocked = false;
 
-    function setPlayingUI() {
-      soundBtn.textContent = '🔊';
-      soundBtn.classList.add('playing');
-      isPlaying = true;
+    function startSound() {
+      bgAudio.play().then(() => {
+        soundBtn.textContent = '🔊';
+        soundBtn.classList.add('playing');
+        isPlaying = true;
+      }).catch(() => {
+        // Browser ne autoplay block kiya - pehle click/tap pe start hoga
+        isPlaying = false;
+      });
     }
 
-    function setPausedUI() {
-      soundBtn.textContent = '🔇';
-      soundBtn.classList.remove('playing');
-      isPlaying = false;
-    }
+    // Page load hote hi sound start karne ki koshish
+    startSound();
 
-    function startSound(showError) {
-      const p = bgAudio.play();
-      if (p !== undefined) {
-        p.then(() => {
-          setPlayingUI();
-        }).catch((err) => {
-          setPausedUI();
-          if (showError) {
-            alert("Audio play nahi ho payi. Check karo 'anthem.mp3' file HTML ke exact same folder me hai aur naam sahi hai. (" + err.name + ")");
-          }
-        });
-      }
+    // Agar browser ne block kiya, pehla click/tap milte hi start kar do
+    function unlockAudio() {
+      if (!isPlaying) startSound();
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
     }
-
-    // Page load hote hi sound start karne ki koshish (mostly blocked, that's expected)
-    startSound(false);
-
-    // Pehla tap/click milte hi turant unlock karo — multiple events ke saath taaki koi bhi browser miss na kare
-    function unlockAudio(e) {
-      if (unlocked) return;
-      unlocked = true;
-      startSound(true);
-    }
-    document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
-    document.addEventListener('touchend', unlockAudio, { once: true, passive: true });
-    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
 
     soundBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!isPlaying) {
-        startSound(true);
+        bgAudio.play().catch(() => {
+          alert("Audio file nahi mili. 'anthem.mp3' naam ki file HTML ke same folder me daal do.");
+        });
+        soundBtn.textContent = '🔊';
+        soundBtn.classList.add('playing');
+        isPlaying = true;
       } else {
         bgAudio.pause();
-        setPausedUI();
+        soundBtn.textContent = '🔇';
+        soundBtn.classList.remove('playing');
+        isPlaying = false;
       }
     });
 
