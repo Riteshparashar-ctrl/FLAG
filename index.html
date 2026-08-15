@@ -329,9 +329,9 @@
     position: fixed;
     bottom: 12px;
     right: 16px;
-    font-size: 20px;
+    font-size: 22px;
     letter-spacing: 0.5px;
-    color: #ea460b;
+    color: #f13906;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,204,0,0.35);
     padding: 5px 12px;
@@ -341,7 +341,6 @@
     align-items: center;
     gap: 8px;
     font-weight: bolder;
-    
   }
 
   .credit-photo {
@@ -507,10 +506,13 @@
     startSound();
 
     // Agar browser ne block kiya, pehla click/tap milte hi start kar do
-    document.addEventListener('click', function firstInteraction() {
+    function unlockAudio() {
       if (!isPlaying) startSound();
-      document.removeEventListener('click', firstInteraction);
-    });
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+    }
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
 
     soundBtn.addEventListener('click', (e) => {
       e.stopPropagation();
