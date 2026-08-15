@@ -259,6 +259,7 @@
     .ff-card p { font-size: 11px; }
 
     .credit { font-size: 10px; padding: 4px 8px; right: 8px; bottom: 8px; }
+    .sound-btn { width: 40px; height: 40px; font-size: 17px; top: 10px; right: 10px; }
   }
   /* ---------- Freedom Fighters Moving Strip ---------- */
   .ff-wrap {
@@ -328,20 +329,69 @@
     position: fixed;
     bottom: 12px;
     right: 16px;
-    font-size: 12px;
+    font-size: 20px;
     letter-spacing: 0.5px;
-    color: #ffe08a;
+    color: #ea460b;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,204,0,0.35);
     padding: 5px 12px;
     border-radius: 6px;
     z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bolder;
+    
+  }
+
+  .credit-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-image: url("myphoto.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-color: #333;
+    border: 2px solid #ffcc00;
+    box-shadow: 0 0 6px rgba(255,204,0,0.5);
+    flex-shrink: 0;
+  }
+
+  /* ---------- Sound Toggle Button ---------- */
+  .sound-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,204,0,0.5);
+    color: #ffcc00;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255,204,0,0.3);
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .sound-btn:hover { transform: scale(1.08); background: rgba(255,204,0,0.15); }
+  .sound-btn.playing { animation: soundPulse 1.2s ease-in-out infinite; }
+
+  @keyframes soundPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,204,0,0.3); }
+    50%      { box-shadow: 0 0 18px rgba(255,204,0,0.7); }
   }
 </style>
 </head>
 <body>
 
-  <div class="credit">This website is made by RITESH PARASHAR</div>
+  <audio id="bgAudio" src="anthem.mp3" loop></audio>
+  <button class="sound-btn" id="soundBtn" title="Sound on/off">🔊</button>
+
+  <div class="credit"><div class="credit-photo"></div> RITESH PARASHAR</div>
 
   <h2>Har Ghar Tiranga</h2>
   <h1>🇮🇳 Independence Day Special 🇮🇳</h1>
@@ -436,6 +486,48 @@
       }
     }
     window.onload = typeWriter;
+
+    // ---- Sound toggle (auto ON by default) ----
+    const bgAudio = document.getElementById('bgAudio');
+    const soundBtn = document.getElementById('soundBtn');
+    let isPlaying = false;
+
+    function startSound() {
+      bgAudio.play().then(() => {
+        soundBtn.textContent = '🔊';
+        soundBtn.classList.add('playing');
+        isPlaying = true;
+      }).catch(() => {
+        // Browser ne autoplay block kiya - pehle click/tap pe start hoga
+        isPlaying = false;
+      });
+    }
+
+    // Page load hote hi sound start karne ki koshish
+    startSound();
+
+    // Agar browser ne block kiya, pehla click/tap milte hi start kar do
+    document.addEventListener('click', function firstInteraction() {
+      if (!isPlaying) startSound();
+      document.removeEventListener('click', firstInteraction);
+    });
+
+    soundBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!isPlaying) {
+        bgAudio.play().catch(() => {
+          alert("Audio file nahi mili. 'anthem.mp3' naam ki file HTML ke same folder me daal do.");
+        });
+        soundBtn.textContent = '🔊';
+        soundBtn.classList.add('playing');
+        isPlaying = true;
+      } else {
+        bgAudio.pause();
+        soundBtn.textContent = '🔇';
+        soundBtn.classList.remove('playing');
+        isPlaying = false;
+      }
+    });
 
     // ---- Freedom Fighters moving strip ----
     const fighters = [
